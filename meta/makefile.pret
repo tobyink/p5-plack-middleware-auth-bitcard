@@ -1,0 +1,8 @@
+# This file provides instructions for packaging.
+
+`Plack-Middleware-Auth-Bitcard`
+	perl_version_from m`Plack::Middleware::Auth::Bitcard`;
+	version_from      m`Plack::Middleware::Auth::Bitcard`;
+	readme_from       m`Plack::Middleware::Auth::Bitcard` ;
+	.
+
