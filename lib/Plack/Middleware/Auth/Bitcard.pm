@@ -34,9 +34,21 @@ sub call
 	
 	$env->{BITCARD_URL} = sub
 	{
-		my $e      = shift || croak("needs \$env!");
-		my $method = shift || 'login_url';
-		$self->bitcard->$method( r => $self->_boomerang_uri("Plack::Request"->new($e)) );
+		unshift @_, 'login_url' if ref $_[0];
+		my $method = shift;
+		my $env    = shift || croak("needs \$env!");
+		
+		my $return;
+		unless ($return = shift)
+		{
+			$return = 
+				($method eq 'login_url')    ? $self->_boomerang_uri("Plack::Request"->new($env)) :
+				($method eq 'logout_url')   ? $self->_boomerang_uri("Plack::Request"->new($env)) :
+				($method eq 'account_url')  ? "Plack::Request"->new($env)->base :
+				croak("need a return URL");
+		}
+		
+		$self->bitcard->$method(r => $return);
 	};
 
 	if ($self->_req_is_boomerang($req))
@@ -101,13 +113,22 @@ sub _store_cookie_data
 	my $self = shift;
 	my $req  = $_[0];
 	
-	my $user = $self->bitcard->verify($req);
-	$user->{_checksum} = sha1_hex($self->bitcard->api_secret . $user->{username});
-	
 	my $res = "Plack::Response"->new;
-	$res->redirect($req->cookies->{bitcard_return_to} || $req->base);
-	$res->cookies->{bitcard} = to_json($user);
-	$req->cookies->{bitcard_return_to} = { value => "0" };
+	$res->redirect(
+		defined $req->cookies->{bitcard_return_to} && $req->cookies->{bitcard_return_to} ne '-'
+		? $req->cookies->{bitcard_return_to}
+		: $req->base
+	);
+	if (my $user = $self->bitcard->verify($req))
+	{
+		$user->{_checksum} = sha1_hex($self->bitcard->api_secret . $user->{username});
+		$res->cookies->{bitcard} = to_json($user);
+	}
+	else
+	{
+		$res->cookies->{bitcard} = to_json({});
+	}
+	$req->cookies->{bitcard_return_to} = { value => "-" };
 	return $res;
 }
 
@@ -119,11 +140,12 @@ sub _fetch_cookie_data
 	return unless $req->cookies->{bitcard};
 	my $user = from_json($req->cookies->{bitcard});
 
+	return unless $user->{username};
 	return unless sha1_hex($self->bitcard->api_secret . $user->{username}) eq $user->{_checksum};
 
 	$env->{BITCARD} = +{%$user};
 	delete $env->{BITCARD}{_checksum};
-	return $env->{BITCARD};
+	return $env->{BITCARD}{username};
 }
 
 1;
