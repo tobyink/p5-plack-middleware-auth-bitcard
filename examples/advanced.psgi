@@ -1,4 +1,3 @@
-use v5.10;
 use strict;
 use warnings;
 
@@ -47,7 +46,6 @@ builder {
 	enable "Auth::Bitcard",
 		bitcard   => $bc,
 		skip_if   => sub { my $req = "Plack::Request"->new(@_); $req->path =~ m{^/?public/} },
-		on_unauth => $unauth_app,
-	;
+		on_unauth => $unauth_app;
 	$app;
 };
