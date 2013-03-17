@@ -14,7 +14,7 @@ use JSON qw(to_json from_json);
 use Plack::Response;
 use Plack::Request;
 use Plack::Util;
-use Plack::Util::Accessor qw(bitcard);
+use Plack::Util::Accessor qw(bitcard skip_if);
 use Digest::SHA qw(sha1_hex);
 
 use base "Plack::Middleware";
@@ -38,6 +38,10 @@ sub call
 		return $res->finalize;
 	}
 	elsif ($self->_fetch_cookie_data($req => $env))
+	{
+		return $self->app->($env);
+	}
+	elsif (my $skip_if = $self->skip_if and $skip_if->($env))
 	{
 		return $self->app->($env);
 	}
@@ -144,7 +148,6 @@ This software is copyright (c) 2013 by Toby Inkster.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
-
 
 =head1 DISCLAIMER OF WARRANTIES
 
