@@ -14,7 +14,7 @@ use JSON qw(to_json from_json);
 use Plack::Response;
 use Plack::Request;
 use Plack::Util;
-use Plack::Util::Accessor qw(bitcard skip_if);
+use Plack::Util::Accessor qw( bitcard skip_if on_unauth );
 use Digest::SHA qw(sha1_hex);
 
 use base "Plack::Middleware";
@@ -32,6 +32,13 @@ sub call
 	my $env  = $_[0];
 	my $req  = "Plack::Request"->new($env);
 	
+	$env->{BITCARD_URL} = sub
+	{
+		my $e      = shift || croak("needs \$env!");
+		my $method = shift || 'login_url';
+		$self->bitcard->$method( r => $self->_boomerang_uri("Plack::Request"->new($e)) );
+	};
+
 	if ($self->_req_is_boomerang($req))
 	{
 		my $res = $self->_store_cookie_data($req);
@@ -44,6 +51,10 @@ sub call
 	elsif (my $skip_if = $self->skip_if and $skip_if->($env))
 	{
 		return $self->app->($env);
+	}
+	elsif (my $on_unauth = $self->on_unauth)
+	{
+		return $on_unauth->($env);
 	}
 	else
 	{
