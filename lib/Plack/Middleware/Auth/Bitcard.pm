@@ -162,7 +162,100 @@ Plack::Middleware::Auth::Bitcard - Bitcard authentication for Plack, which I sup
 
 =head1 SYNOPSIS
 
+   use strict;
+   use warnings;
+   
+   use Authen::Bitcard;
+   use Plack::Builder;
+   
+   my $app = sub {
+      my $env = shift;
+      my $username = $env->{BITCARD}{username};
+      ...;
+   };
+   
+   my $bc = "Authen::Bitcard"->new;
+   $bc->token("12345678");
+   $bc->api_secret("1234567890ABCDEF");
+   
+   builder {
+      enable "Auth::Bitcard", bitcard => $bc;
+      $app;
+   };
+
 =head1 DESCRIPTION
+
+This module provides Plack middleware for Bitcard authentication.
+
+B<< What is Bitcard? >> It's a trusted third-party authentication system.
+Like OpenID but centralised, somewhat outdated, and pretty obscure.
+
+B<< So why use it? >> You probably shouldn't. An exception would be if you
+need login functionality for a website that is aimed at Perl developers.
+This is because Bitcard is already used as login for C<< rt.cpan.org >> and
+C<< cpanratings.perl.org >>, so many Perl developers already have a login
+set up.
+
+=head2 Simple usage
+
+The example in the SYNOPSIS section shows how easy it is to add Bitcard
+authentication to an existing PSGI app.
+
+You'll need a Bitcard token and API secret for your website - to get these,
+sign into L<http://www.bitcard.org/>, go to your account settings, click on
+"My Sites", then add a new site. You will need to tell it your site's name,
+and a URL. This URL should be the "base" URL for your PSGI app with
+C<< /_bitcard_boomerang >> added to the end. For example, if you are serving
+C<< http://bugs.example.com/ >> using Plack, then the URL you want is
+C<< http://bugs.example.com/_bitcard_boomerang >>. Once you've entered that
+information, the bitcard.org site will issue you with a token and API secret.
+
+With this simple setup, B<all> requests to your site will be protected by
+Bitcard authentication. When somebody first hits your site, they'll be
+instantly redirected to bitcard.org to login.
+
+Once they've logged in, their Bitcard details, including their username will
+be in C<< $env->{BITCARD} >>.
+
+=head2 No login necessary
+
+You may want to specify that certain parts of your site do not require a
+login; or perhaps visitors from certain IP addresses do not need to login;
+or whatever.
+
+This module accepts a coderef which can check these sorts of criteria:
+
+   builder {
+      enable "Auth::Bitcard",
+         bitcard => $bc,
+         skip_if => sub { my $env = shift; ... };
+      $app;
+   };
+
+If the coderef returns true, then Bitcard authentication will be skipped for
+the given request.
+
+=head2 Showing different views of the site
+
+Perhaps you don't B<always> need people to login to your site. Maybe you
+are happy for them to browse a public version of your site, and they only
+need to login if they want to access the super-awesome features.
+
+In this case, you can provide an C<on_unauth> action:
+
+   builder {
+      enable "Auth::Bitcard",
+         bitcard   => $bc,
+         on_unauth => sub { my $env = shift; ... };
+      $app;
+   };
+
+C<on_unauth> is a PSGI app in its own right, and is expected to return a
+PSGI-style arrayref.
+
+=head2 Displaying login/logout links
+
+
 
 =head1 BUGS
 
