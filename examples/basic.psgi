@@ -19,8 +19,6 @@ my $bc = "Authen::Bitcard"->new;
 $bc->token( __CONFIG__->{secret} );
 $bc->api_secret( __CONFIG__->{token} );
 
-die Dumper($bc);
-
 builder {
 	enable "Auth::Bitcard", bitcard => $bc;
 	$app;
