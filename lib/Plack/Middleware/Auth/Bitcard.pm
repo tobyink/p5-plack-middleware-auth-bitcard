@@ -32,12 +32,12 @@ sub call
 	my $env  = $_[0];
 	my $req  = "Plack::Request"->new($env);
 	
-#	$env->{BITCARD_URL} = sub
-#	{
-#		my $e      = shift || croak("needs \$env!");
-#		my $method = shift || 'login_url';
-#		$self->bitcard->$method( r => $self->_boomerang_uri("Plack::Request"->new($e)) );
-#	};
+	$env->{BITCARD_URL} = sub
+	{
+		my $e      = shift || croak("needs \$env!");
+		my $method = shift || 'login_url';
+		$self->bitcard->$method( r => $self->_boomerang_uri("Plack::Request"->new($e)) );
+	};
 
 	if ($self->_req_is_boomerang($req))
 	{
@@ -48,14 +48,14 @@ sub call
 	{
 		return $self->app->($env);
 	}
-#	elsif ($self->skip_if and $self->skip_if->($env))
-#	{
-#		return $self->app->($env);
-#	}
-#	elsif (my $on_unauth = $self->on_unauth)
-#	{
-#		return $on_unauth->($env);
-#	}
+	elsif ($self->skip_if and $self->skip_if->($env))
+	{
+		return $self->app->($env);
+	}
+	elsif (my $on_unauth = $self->on_unauth)
+	{
+		return $on_unauth->($env);
+	}
 	else
 	{
 		my $res = $self->_start_boomerang($req);
