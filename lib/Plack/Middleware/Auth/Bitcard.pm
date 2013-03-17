@@ -37,17 +37,7 @@ sub call
 		unshift @_, 'login_url' if ref $_[0];
 		my $method = shift;
 		my $env    = shift || croak("needs \$env!");
-		
-		my $return;
-		unless ($return = shift)
-		{
-			$return = 
-				($method eq 'login_url')    ? $self->_boomerang_uri("Plack::Request"->new($env)) :
-				($method eq 'logout_url')   ? $self->_boomerang_uri("Plack::Request"->new($env)) :
-				($method eq 'account_url')  ? "Plack::Request"->new($env)->base :
-				croak("need a return URL");
-		}
-		
+		my $return = shift || $self->_boomerang_uri("Plack::Request"->new($env));
 		$self->bitcard->$method(r => $return);
 	};
 
@@ -136,13 +126,13 @@ sub _fetch_cookie_data
 {
 	my $self = shift;
 	my ($req, $env) = @_;
-
+	
 	return unless $req->cookies->{bitcard};
 	my $user = from_json($req->cookies->{bitcard});
-
+	
 	return unless $user->{username};
 	return unless sha1_hex($self->bitcard->api_secret . $user->{username}) eq $user->{_checksum};
-
+	
 	$env->{BITCARD} = +{%$user};
 	delete $env->{BITCARD}{_checksum};
 	return $env->{BITCARD}{username};
@@ -255,7 +245,25 @@ PSGI-style arrayref.
 
 =head2 Displaying login/logout links
 
+You can obtain login/logout URLs using the following:
 
+   my $login_url    = $env->{BITCARD_URL}->(login_url => $env);
+   my $logout_url   = $env->{BITCARD_URL}->(logout_url => $env);
+
+There are also URLs for the user's account settings page, and to register
+for a new bitcard account.
+
+   my $account_url  = $env->{BITCARD_URL}->(account_url => $env);
+   my $register_url = $env->{BITCARD_URL}->(register_url => $env);
+
+When logged in people return to your site, they will arrive back at your
+site's base URL. If you wish to send them elsewhere, set a cookie containing
+the full URL you wish them to return to:
+
+   my $res = "Plack::Response"->new;
+   $res->cookies->{bitcard_return_to} = "http://example.com/goodbye";
+   $res->redirect($env->{BITCARD_URL}->(logout_url => $env));
+   return $res->finalize;
 
 =head1 BUGS
 
@@ -263,6 +271,8 @@ Please report any bugs to
 L<http://rt.cpan.org/Dist/Display.html?Queue=Plack-Middleware-Auth-Bitcard>.
 
 =head1 SEE ALSO
+
+L<Authen::Bitcard>.
 
 =head1 AUTHOR
 
