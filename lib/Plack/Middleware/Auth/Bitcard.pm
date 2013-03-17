@@ -1,6 +1,6 @@
 package Plack::Middleware::Auth::Bitcard;
 
-use v5.008;
+use 5.008;
 use strict;
 use warnings;
 
