@@ -8,7 +8,7 @@
 	:homepage             <https://metacpan.org/release/Plack-Middleware-Auth-Bitcard>;
 	:download-page        <https://metacpan.org/release/Plack-Middleware-Auth-Bitcard>;
 	:bug-database         <http://rt.cpan.org/Dist/Display.html?Queue=Plack-Middleware-Auth-Bitcard>;
-	:repository           [ a :HgRepository; :browse <https://bitbucket.org/tobyink/p5-plack-middleware-auth-bitcard> ];
+	:repository           [ a :GitRepository; :browse <https://github.com/tobyink/p5-plack-middleware-auth-bitcard> ];
 	:created              2013-03-16;
 	:license              <http://dev.perl.org/licenses/>;
 	:maintainer           cpan:TOBYINK;
