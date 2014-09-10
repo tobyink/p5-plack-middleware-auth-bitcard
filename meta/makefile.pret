@@ -1,0 +1,10 @@
+@prefix deps:  <http://ontologi.es/doap-deps#> .
+
+<http://purl.org/NET/cpan-uri/dist/Plack-Middleware-Auth-Bitcard/project>
+	deps:runtime-requirement         [ deps:on "Authen::Bitcard 0"^^deps:CpanId ];
+	deps:runtime-requirement         [ deps:on "JSON 2.00"^^deps:CpanId ];
+	deps:runtime-requirement         [ deps:on "Plack 1.0000"^^deps:CpanId ];
+	deps:test-requirement            [ deps:on "HTTP::Request::Common 0"^^deps:CpanId ];
+	deps:test-requirement            [ deps:on "URI 0"^^deps:CpanId ];
+	deps:test-requirement            [ deps:on "URI::QueryParam 0"^^deps:CpanId ].
+
