@@ -6,7 +6,7 @@ use warnings;
 
 BEGIN {
 	$Plack::Middleware::Auth::Bitcard::AUTHORITY = 'cpan:TOBYINK';
-	$Plack::Middleware::Auth::Bitcard::VERSION   = '0.001';
+	$Plack::Middleware::Auth::Bitcard::VERSION   = '0.002';
 }
 
 use Carp;
